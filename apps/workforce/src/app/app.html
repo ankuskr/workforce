@@ -1,4 +1,13 @@
-<app-nx-welcome></app-nx-welcome>
 <router-outlet></router-outlet>
 
-<h1>hello</h1>
+<div class="bg-blue-500 text-white p-6 text-center">
+    Tailwind is working!
+</div>
+
+<button (click)="showToast()" nz-button nzType="primary">
+    Show Success Toast
+</button>
+
+<button (click)="showError()" nz-button nzType="default">
+    Show Error Toast
+</button>
