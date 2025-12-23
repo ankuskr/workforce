@@ -1,23 +1,27 @@
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterModule } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-import { ToastrService } from 'ngx-toastr';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 
 @Component({
-  imports: [RouterModule, NzButtonModule],
+  imports: [RouterModule, NzButtonModule, NzSpinModule],
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
+  private router = inject(Router);
   protected title = 'workforce';
-  constructor(private toastr: ToastrService) {}
+  isLoading = false;
 
-  showToast() {
-    this.toastr.success('This is a success toast!', 'Success');
-  }
-
-  showError() {
-    this.toastr.error('Something went wrong!', 'Error');
+  constructor() {
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationStart) {
+        this.isLoading = true;
+      }
+      if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
+        this.isLoading = false;
+      }
+    });
   }
 }

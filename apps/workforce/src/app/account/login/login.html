@@ -1,0 +1,50 @@
+<!-- eslint-disable @angular-eslint/template/label-has-associated-control -->
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <nz-card class="w-full max-w-md shadow-lg">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Sign in</h2>
+            <p class="mt-2 text-gray-600">Welcome back! Please enter your details.</p>
+        </div>
+
+        <form nz-form [formGroup]="loginForm" (ngSubmit)="onSubmit()" nzLayout="vertical">
+            <nz-form-item>
+                <nz-form-label nzRequired nzFor="email">Email</nz-form-label>
+                <nz-form-control nzErrorTip="Please enter a valid email">
+                    <nz-input-group nzPrefixIcon="mail">
+                        <input type="email" nz-input formControlName="email" id="email"
+                            placeholder="Enter your email" />
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+
+            <nz-form-item>
+                <nz-form-label nzRequired nzFor="password">Password</nz-form-label>
+                <nz-form-control nzErrorTip="Please enter your password">
+                    <nz-input-group nzPrefixIcon="lock">
+                        <input [type]="passwordVisible ? 'text' : 'password'" nz-input formControlName="password"
+                            id="password" placeholder="Enter your password" />
+                    </nz-input-group>
+                </nz-form-control>
+            </nz-form-item>
+
+            <div class="flex items-center justify-between mb-4">
+                <label nz-checkbox formControlName="remember">
+                    <span>Remember me</span>
+                </label>
+                <a class="text-blue-600 hover:text-blue-500 text-sm">Forgot password?</a>
+            </div>
+
+            <button nz-button nzType="primary" nzBlock nzSize="large" [nzLoading]="isLoading"
+                [disabled]="loginForm.invalid" type="submit" class="mb-4">
+                Sign in
+            </button>
+
+            <div class="text-center">
+                <span class="text-gray-600">Don't have an account? </span>
+                <a routerLink="/account/signup" class="text-blue-600 hover:text-blue-500 font-medium">
+                    Sign up
+                </a>
+            </div>
+        </form>
+    </nz-card>
+</div>
