@@ -1,13 +1,9 @@
-<router-outlet></router-outlet>
+<nz-spin [nzSpinning]="isLoading" nzTip="Loading...">
+    <router-outlet></router-outlet>
+</nz-spin>
 
-<div class="bg-blue-500 text-white p-6 text-center">
-    Tailwind is working!
-</div>
+<!-- nx g @nx/angular:module account --project=workforce --routing command to create module with routing -->
 
-<button (click)="showToast()" nz-button nzType="primary">
-    Show Success Toast
-</button>
-
-<button (click)="showError()" nz-button nzType="default">
-    Show Error Toast
-</button>
+<!-- nx g @nx/angular:component --hel -->
+<!-- nx g @nx/angular:component apps/workforce/src/app/account/login/login -->
+<!-- npm install -D @nx/nest --legacy-peer-deps  we install plugins for nest application -->
