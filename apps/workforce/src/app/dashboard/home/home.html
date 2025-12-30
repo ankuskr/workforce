@@ -1,0 +1,43 @@
+<div class="dashboard-home">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Welcome back, {{ user()?.name }}!</h1>
+        <p class="text-gray-600">Here's what's happening with your account today.</p>
+    </div>
+
+    <div nz-row [nzGutter]="16" class="mb-6">
+        <div nz-col [nzSpan]="8">
+            <nz-card>
+                <nz-statistic [nzValue]="0" nzTitle="Total Projects">
+                    <ng-template #nzPrefix>
+                        <span nz-icon nzType="project" nzTheme="outline" class="text-blue-500"></span>
+                    </ng-template>
+                </nz-statistic>
+            </nz-card>
+        </div>
+        <div nz-col [nzSpan]="8">
+            <nz-card>
+                <nz-statistic [nzValue]="0" nzTitle="Active Tasks">
+                    <ng-template #nzPrefix>
+                        <span nz-icon nzType="check-circle" nzTheme="outline" class="text-green-500"></span>
+                    </ng-template>
+                </nz-statistic>
+            </nz-card>
+        </div>
+        <div nz-col [nzSpan]="8">
+            <nz-card>
+                <nz-statistic [nzValue]="0" nzTitle="Team Members">
+                    <ng-template #nzPrefix>
+                        <span nz-icon nzType="team" nzTheme="outline" class="text-purple-500"></span>
+                    </ng-template>
+                </nz-statistic>
+            </nz-card>
+        </div>
+    </div>
+
+    <nz-card nzTitle="Recent Activity">
+        <div class="text-center py-8 text-gray-500">
+            <span nz-icon nzType="inbox" nzTheme="outline" class="text-4xl mb-2"></span>
+            <p>No recent activity</p>
+        </div>
+    </nz-card>
+</div>

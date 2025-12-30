@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+nz-header {
+  height: 64px;
+  line-height: 64px;
+}
+
+nz-sider {
+  .ant-layout-sider-children {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+::ng-deep {
+  .ant-menu-inline {
+    border-right: none !important;
+  }
+}

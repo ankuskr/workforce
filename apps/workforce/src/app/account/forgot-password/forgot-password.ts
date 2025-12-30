@@ -5,7 +5,6 @@ import {
   FormGroup,
   ReactiveFormsModule,
   Validators,
-  AbstractControl,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -13,13 +12,12 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzStepsModule } from 'ng-zorro-antd/steps';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../services/auth.service';
 
 @Component({
-  selector: 'app-signup',
+  selector: 'app-forgot-password',
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -29,59 +27,47 @@ import { AuthService } from '../services/auth.service';
     NzButtonModule,
     NzCardModule,
     NzIconModule,
-    NzCheckboxModule,
     NzStepsModule,
   ],
-  templateUrl: './signup.html',
-  styleUrl: './signup.scss',
+  templateUrl: './forgot-password.html',
+  styleUrl: './forgot-password.scss',
 })
-export class Signup {
+export class ForgotPassword {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
   private toastr = inject(ToastrService);
 
-  signupForm: FormGroup;
+  emailForm: FormGroup;
   otpForm: FormGroup;
+  passwordForm: FormGroup;
   isLoading = false;
-  passwordVisible = false;
   currentStep = 0;
   userEmail = '';
   resendCountdown = 0;
+  passwordVisible = false;
   private resendTimer: any;
 
   constructor() {
-    this.signupForm = this.fb.group(
-      {
-        name: ['', [Validators.required, Validators.minLength(2)]],
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
-        confirmPassword: ['', [Validators.required]],
-        agreeTerms: [false, [Validators.requiredTrue]],
-      },
-      { validators: this.passwordMatchValidator },
-    );
+    this.emailForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+    });
 
     this.otpForm = this.fb.group({
       otp: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]],
     });
+
+    this.passwordForm = this.fb.group(
+      {
+        newPassword: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', [Validators.required]],
+      },
+      { validators: this.passwordMatchValidator },
+    );
   }
 
-  get confirmPasswordError(): string {
-    const control = this.signupForm.get('confirmPassword');
-    if (control?.hasError('required')) {
-      return 'Please confirm your password';
-    }
-    if (this.signupForm.hasError('passwordMismatch')) {
-      return 'Passwords do not match';
-    }
-    return '';
-  }
-
-  passwordMatchValidator(
-    form: AbstractControl,
-  ): { [key: string]: boolean } | null {
-    const password = form.get('password')?.value;
+  passwordMatchValidator(form: any): { [key: string]: boolean } | null {
+    const password = form.get('newPassword')?.value;
     const confirmPassword = form.get('confirmPassword')?.value;
     if (password !== confirmPassword) {
       return { passwordMismatch: true };
@@ -89,12 +75,23 @@ export class Signup {
     return null;
   }
 
-  async onSubmit(): Promise<void> {
-    if (this.signupForm.valid) {
-      this.isLoading = true;
-      const { name, email, password } = this.signupForm.value;
+  get confirmPasswordError(): string {
+    const control = this.passwordForm.get('confirmPassword');
+    if (control?.hasError('required')) {
+      return 'Please confirm your password';
+    }
+    if (this.passwordForm.hasError('passwordMismatch')) {
+      return 'Passwords do not match';
+    }
+    return '';
+  }
 
-      const result = await this.authService.initiateSignup({ name, email, password });
+  async submitEmail(): Promise<void> {
+    if (this.emailForm.valid) {
+      this.isLoading = true;
+      const { email } = this.emailForm.value;
+
+      const result = await this.authService.forgotPassword({ email });
 
       this.isLoading = false;
 
@@ -106,37 +103,35 @@ export class Signup {
       } else {
         this.toastr.error(result.message, 'Error');
       }
-    } else {
-      Object.values(this.signupForm.controls).forEach((control) => {
-        if (control.invalid) {
-          control.markAsDirty();
-          control.updateValueAndValidity();
-        }
-      });
     }
   }
 
   async verifyOtp(): Promise<void> {
     if (this.otpForm.valid) {
+      this.currentStep = 2;
+    }
+  }
+
+  async resetPassword(): Promise<void> {
+    if (this.passwordForm.valid && this.otpForm.valid) {
       this.isLoading = true;
       const { otp } = this.otpForm.value;
+      const { newPassword } = this.passwordForm.value;
 
-      const result = await this.authService.verifyOtp({
+      const result = await this.authService.resetPassword({
         email: this.userEmail,
         code: otp,
+        newPassword,
       });
 
       this.isLoading = false;
 
       if (result.success) {
-        this.toastr.success('Account created successfully!', 'Welcome');
-        this.router.navigate(['/dashboard']);
+        this.toastr.success(result.message, 'Success');
+        this.router.navigate(['/account/login']);
       } else {
         this.toastr.error(result.message, 'Error');
       }
-    } else {
-      this.otpForm.get('otp')?.markAsDirty();
-      this.otpForm.get('otp')?.updateValueAndValidity();
     }
   }
 
@@ -144,11 +139,11 @@ export class Signup {
     if (this.resendCountdown > 0) return;
 
     this.isLoading = true;
-    const result = await this.authService.resendOtp(this.userEmail);
+    const result = await this.authService.forgotPassword({ email: this.userEmail });
     this.isLoading = false;
 
     if (result.success) {
-      this.toastr.success(result.message, 'Success');
+      this.toastr.success('Code resent successfully', 'Success');
       this.startResendCountdown();
     } else {
       this.toastr.error(result.message, 'Error');
@@ -169,10 +164,8 @@ export class Signup {
   }
 
   goBack(): void {
-    this.currentStep = 0;
-    this.otpForm.reset();
-    if (this.resendTimer) {
-      clearInterval(this.resendTimer);
+    if (this.currentStep > 0) {
+      this.currentStep--;
     }
   }
 }

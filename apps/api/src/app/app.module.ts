@@ -1,15 +1,22 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { User } from './entities/user.entity';
+import { Otp } from './entities/otp.entity';
 
 @Module({
-  imports: [],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'sqlite',
+      database: 'workforce.db',
+      entities: [User, Otp],
+      synchronize: true, // Set to false in production
+    }),
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
-
-// nx g @nx/nest:application --name=api --directory=apps/api
-
-
-}
+export class AppModule {}

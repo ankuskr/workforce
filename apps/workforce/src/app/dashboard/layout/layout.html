@@ -1,0 +1,73 @@
+<nz-layout class="min-h-screen">
+    <!-- Sidebar -->
+    <nz-sider nzCollapsible [(nzCollapsed)]="isCollapsed" [nzTrigger]="null" nzWidth="256" nzBreakpoint="lg"
+        class="bg-white shadow-sm">
+        <div class="h-16 flex items-center justify-center border-b border-gray-100">
+            @if (!isCollapsed) {
+            <h1 class="text-xl font-bold text-blue-600">Workforce</h1>
+            } @else {
+            <span class="text-xl font-bold text-blue-600">W</span>
+            }
+        </div>
+        <ul nz-menu nzMode="inline" class="border-r-0">
+            <li nz-menu-item nzMatchRouter routerLink="/dashboard">
+                <span nz-icon nzType="dashboard" nzTheme="outline"></span>
+                <span>Dashboard</span>
+            </li>
+            <li nz-menu-item nzMatchRouter routerLink="/dashboard/profile">
+                <span nz-icon nzType="user" nzTheme="outline"></span>
+                <span>Profile</span>
+            </li>
+            <li nz-menu-item nzMatchRouter routerLink="/dashboard/settings">
+                <span nz-icon nzType="setting" nzTheme="outline"></span>
+                <span>Settings</span>
+            </li>
+        </ul>
+    </nz-sider>
+
+    <!-- Main Content -->
+    <nz-layout>
+        <!-- Header -->
+        <nz-header class="bg-white px-4 flex items-center justify-between shadow-sm">
+            <div class="flex items-center">
+                <span class="cursor-pointer text-lg" nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
+                    (click)="isCollapsed = !isCollapsed"></span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <a nz-dropdown [nzDropdownMenu]="userMenu">
+                    <div class="flex items-center gap-2 cursor-pointer">
+                        <nz-avatar [nzText]="getUserInitials()" nzSize="default"
+                            class="bg-blue-500"></nz-avatar>
+                        <span class="hidden sm:inline">{{ user()?.name }}</span>
+                        <span nz-icon nzType="down"></span>
+                    </div>
+                </a>
+                <nz-dropdown-menu #userMenu="nzDropdownMenu">
+                    <ul nz-menu>
+                        <li nz-menu-item routerLink="/dashboard/profile">
+                            <span nz-icon nzType="user" nzTheme="outline"></span>
+                            <span class="ml-2">Profile</span>
+                        </li>
+                        <li nz-menu-item routerLink="/dashboard/settings">
+                            <span nz-icon nzType="setting" nzTheme="outline"></span>
+                            <span class="ml-2">Settings</span>
+                        </li>
+                        <li nz-menu-divider></li>
+                        <li nz-menu-item (click)="logout()">
+                            <span nz-icon nzType="logout" nzTheme="outline"></span>
+                            <span class="ml-2">Logout</span>
+                        </li>
+                    </ul>
+                </nz-dropdown-menu>
+            </div>
+        </nz-header>
+
+        <!-- Content -->
+        <nz-content class="m-4">
+            <div class="bg-white p-6 min-h-full rounded-lg shadow-sm">
+                <router-outlet></router-outlet>
+            </div>
+        </nz-content>
+    </nz-layout>
+</nz-layout>

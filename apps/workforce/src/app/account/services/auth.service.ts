@@ -1,7 +1,10 @@
 import { Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 export interface User {
+  id: string;
   email: string;
   name: string;
 }
@@ -17,73 +20,160 @@ export interface SignupCredentials {
   password: string;
 }
 
+export interface VerifyOtpData {
+  email: string;
+  code: string;
+}
+
+export interface ForgotPasswordData {
+  email: string;
+}
+
+export interface ResetPasswordData {
+  email: string;
+  code: string;
+  newPassword: string;
+}
+
+interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+interface MessageResponse {
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private readonly API_URL = 'http://localhost:3000/api/auth';
+
   private currentUser = signal<User | null>(null);
   private isAuthenticated = signal<boolean>(false);
+  private authToken = signal<string | null>(null);
 
   readonly user = this.currentUser.asReadonly();
   readonly authenticated = this.isAuthenticated.asReadonly();
+  readonly token = this.authToken.asReadonly();
 
-  constructor(private router: Router) {
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {
     this.checkStoredAuth();
   }
 
   private checkStoredAuth(): void {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const storedToken = localStorage.getItem('token');
+    if (storedUser && storedToken) {
       this.currentUser.set(JSON.parse(storedUser));
+      this.authToken.set(storedToken);
       this.isAuthenticated.set(true);
     }
   }
 
-  async login(credentials: LoginCredentials): Promise<{ success: boolean; message: string }> {
-    // Simulate API call - replace with actual API integration
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Demo: accept any email/password combination for now
-        if (credentials.email && credentials.password) {
-          const user: User = {
-            email: credentials.email,
-            name: credentials.email.split('@')[0]
-          };
-          this.currentUser.set(user);
-          this.isAuthenticated.set(true);
-          localStorage.setItem('user', JSON.stringify(user));
-          resolve({ success: true, message: 'Login successful' });
-        } else {
-          resolve({ success: false, message: 'Invalid credentials' });
-        }
-      }, 1000);
-    });
+  async initiateSignup(credentials: SignupCredentials): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<MessageResponse>(`${this.API_URL}/signup`, credentials)
+      );
+      return { success: true, message: response.message };
+    } catch (error: any) {
+      const message = error?.error?.message || 'Signup failed. Please try again.';
+      return { success: false, message };
+    }
   }
 
-  async signup(credentials: SignupCredentials): Promise<{ success: boolean; message: string }> {
-    // Simulate API call - replace with actual API integration
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (credentials.email && credentials.password && credentials.name) {
-          const user: User = {
-            email: credentials.email,
-            name: credentials.name
-          };
-          this.currentUser.set(user);
-          this.isAuthenticated.set(true);
-          localStorage.setItem('user', JSON.stringify(user));
-          resolve({ success: true, message: 'Account created successfully' });
-        } else {
-          resolve({ success: false, message: 'Please fill all fields' });
-        }
-      }, 1000);
-    });
+  async verifyOtp(data: VerifyOtpData): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<AuthResponse>(`${this.API_URL}/verify-otp`, data)
+      );
+
+      this.currentUser.set(response.user);
+      this.authToken.set(response.token);
+      this.isAuthenticated.set(true);
+
+      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('token', response.token);
+
+      return { success: true, message: 'Email verified successfully!' };
+    } catch (error: any) {
+      const message = error?.error?.message || 'OTP verification failed.';
+      return { success: false, message };
+    }
+  }
+
+  async resendOtp(email: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<MessageResponse>(`${this.API_URL}/resend-otp`, { email })
+      );
+      return { success: true, message: response.message };
+    } catch (error: any) {
+      const message = error?.error?.message || 'Failed to resend OTP.';
+      return { success: false, message };
+    }
+  }
+
+  async login(credentials: LoginCredentials): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials)
+      );
+
+      this.currentUser.set(response.user);
+      this.authToken.set(response.token);
+      this.isAuthenticated.set(true);
+
+      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('token', response.token);
+
+      return { success: true, message: 'Login successful!' };
+    } catch (error: any) {
+      const message = error?.error?.message || 'Invalid email or password.';
+      return { success: false, message };
+    }
+  }
+
+  async forgotPassword(data: ForgotPasswordData): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<MessageResponse>(`${this.API_URL}/forgot-password`, data)
+      );
+      return { success: true, message: response.message };
+    } catch (error: any) {
+      const message = error?.error?.message || 'Failed to send reset email.';
+      return { success: false, message };
+    }
+  }
+
+  async resetPassword(data: ResetPasswordData): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<MessageResponse>(`${this.API_URL}/reset-password`, data)
+      );
+      return { success: true, message: response.message };
+    } catch (error: any) {
+      const message = error?.error?.message || 'Password reset failed.';
+      return { success: false, message };
+    }
   }
 
   logout(): void {
     this.currentUser.set(null);
+    this.authToken.set(null);
     this.isAuthenticated.set(false);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     this.router.navigate(['/account/login']);
+  }
+
+  getAuthHeader(): { Authorization: string } | {} {
+    const token = this.authToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
   }
 }

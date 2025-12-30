@@ -61,7 +61,7 @@ export class Login {
 
       if (result.success) {
         this.toastr.success(result.message, 'Success');
-        this.router.navigate(['/']);
+        this.router.navigate(['/dashboard']);
       } else {
         this.toastr.error(result.message, 'Error');
       }

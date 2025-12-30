@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideHttpClient } from '@angular/common/http';
 import { provideToastr } from 'ngx-toastr';
 
 import { appRoutes } from './app.routes';
@@ -13,10 +14,13 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),
 
-    // ✅ REQUIRED for ng-zorro & ngx-toastr
+    // HTTP Client for API calls
+    provideHttpClient(),
+
+    // REQUIRED for ng-zorro & ngx-toastr
     provideAnimations(),
 
-    // ✅ ngx-toastr
+    // ngx-toastr
     provideToastr({
       timeOut: 3000,
       positionClass: 'toast-top-right',
